@@ -1,4 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Home</h1>
+<div class="media">
+
+
+</div>
+    {% for reflect in reflects %}
+        <div class="media content-section">
+            <img class="align-self-start mr-3" src="..." alt="Generic placeholder image">
+            <div class="media-body">
+                <h5 class="mt-0">{{ reflect.author }}</h5>
+                <small class="text-muted">{{ reflect.date_posted }}</small>
+                <p>Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.</p>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock content %}

@@ -1,9 +1,26 @@
 from flask import Flask, render_template, url_for, flash, redirect
+from flask_sqlalchemy import SQLAlchemy
 from reflection.users.forms import RegisterForm, LoginForm
+
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '122c5e10d62545e72aae5a0192d0f269'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite.db'
+
+db = SQLAlchemy(app)
+bcrypt = Bcrypt()
+login_manager = LoginManager(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+from reflection.models import User
 
 reflects = [
     {
@@ -34,6 +51,10 @@ def about():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
         flash('User created. You can now login.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title="Register", form=form)
@@ -43,8 +64,12 @@ def register():
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
-        flash('You are now logged in. Start Posting!', 'success')
-        return redirect(url_for('home'))
+        user = User.query.filter_by(username=login_form.username.data).first()
+        if user and bcrypt.check_password_hash(user.password, login_form.password.data):
+            login_user(user)
+            return redirect(url_for('home'))
+        else:
+            flash('Cannot Login. Please try again!', 'danger')
     return render_template('login.html', title='Login', form=login_form)
 
 

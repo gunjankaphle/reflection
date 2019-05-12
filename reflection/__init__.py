@@ -1,9 +1,9 @@
-from flask import Flask, render_template, url_for, flash, redirect
+from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from reflection.users.forms import RegisterForm, LoginForm
 
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
 
 app = Flask(__name__)
@@ -71,6 +71,18 @@ def login():
         else:
             flash('Cannot Login. Please try again!', 'danger')
     return render_template('login.html', title='Login', form=login_form)
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+
+@login_required
+@app.route('/profile', methods=['GET'])
+def account():
+    return render_template('profile.html', title='Profile')
 
 
 if __name__ == '__main__':
